@@ -1,49 +1,48 @@
-# Multi-stage Dockerfile for Spring Cloud Gateway API Gateway Service
+# Multi-stage Dockerfile para DistriSchool Microservice Template
+# Suporta desenvolvimento com hot reloading e produção otimizada
 
-# Stage 1: Build stage
-FROM maven:3.9.6-openjdk-17-slim AS build
+# Stage 1: Resolver dependências (cache layer)
+FROM maven:3.9-eclipse-temurin-17 AS deps
 
-# Set working directory
 WORKDIR /app
+COPY pom.xml /app
 
-# Copy pom.xml first for better layer caching
-COPY pom.xml .
+# Resolve dependências Maven
+RUN mvn dependency:resolve
 
-# Download dependencies
-RUN mvn dependency:go-offline -B
+# Stage 2: Build da aplicação
+FROM maven:3.9-eclipse-temurin-17 AS build
 
-# Copy source code
-COPY src ./src
-
-# Build the application
-RUN mvn clean package -DskipTests
-
-# Stage 2: Runtime stage
-FROM openjdk:17-jre-slim
-
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
 WORKDIR /app
+COPY --from=deps /root/.m2/repository /root/.m2/repository
+COPY . /app
 
-# Copy the built JAR from build stage
-COPY --from=build /app/target/*.jar app.jar
+RUN mvn package -DskipTests
 
-# Create non-root user for security
-RUN groupadd -r gateway && useradd -r -g gateway gateway
-RUN chown -R gateway:gateway /app
-USER gateway
+# Stage 3: Desenvolvimento com hot reloading
+FROM maven:3.9-eclipse-temurin-17 AS dev
 
-# Expose port
+WORKDIR /app
+COPY --from=deps /root/.m2/repository /root/.m2/repository
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh
+
 EXPOSE 8080
 
-# Set JVM options
-ENV JAVA_OPTS="-Xmx512m -Xms256m"
+# Stage 4: Produção otimizada
+FROM eclipse-temurin:17-jdk AS release
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+LABEL maintainer="DistriSchool Team"
+WORKDIR /app
 
-# Run the application
-CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Copia o JAR construído
+COPY --from=build /app/target/microservice-template-1.0.0.jar /app/app.jar
+
+# Cria usuário não-root para segurança
+RUN groupadd --system app && useradd --system --shell /bin/false --gid app app
+RUN chown -R app:app /app
+
+USER app
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "app.jar"]
