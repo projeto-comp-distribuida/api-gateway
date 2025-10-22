@@ -34,8 +34,8 @@ FROM eclipse-temurin:17-jdk AS release
 LABEL maintainer="DistriSchool Team"
 WORKDIR /app
 
-# Copia o JAR construído
-COPY --from=build /app/target/microservice-template-1.0.0.jar /app/app.jar
+    # Copia o JAR construído
+    COPY --from=build /app/target/api-gateway-1.0.0.jar /app/app.jar
 
 # Cria usuário não-root para segurança
 RUN groupadd --system app && useradd --system --shell /bin/false --gid app app
