@@ -161,3 +161,4 @@ This project is part of the DistriSchool system and follows the same licensing t
 
 For issues and questions, please refer to the main DistriSchool project documentation or create an issue in the repository.
 
+

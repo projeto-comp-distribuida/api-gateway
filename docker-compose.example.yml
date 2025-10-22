@@ -65,3 +65,4 @@ services:
 networks:
   distrischool-network:
     external: true
+
