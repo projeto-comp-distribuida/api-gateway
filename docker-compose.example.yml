@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    image: distrischooldevacr.azurecr.io/api-gateway:latest
+    container_name: distrischool-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      # Server Configuration
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: prod
+      
+      # Gateway route configurations
+      SPRING_CLOUD_GATEWAY_ROUTES_0_ID: auth-service
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://microservice-auth-prod:8080
+      SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0: Path=/api/auth/**
+      SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_0: StripPrefix=2
+      SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_1: name=CircuitBreaker,args.name=auth-service,args.fallbackUri=forward:/fallback/auth
+      
+      SPRING_CLOUD_GATEWAY_ROUTES_1_ID: student-service
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://student-management-service-prod:8080
+      SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0: Path=/api/students/**
+      SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_0: StripPrefix=2
+      SPRING_CLOUD_GATEWAY_ROUTES_1_FILTERS_1: name=CircuitBreaker,args.name=student-service,args.fallbackUri=forward:/fallback/students
+      
+      SPRING_CLOUD_GATEWAY_ROUTES_2_ID: teacher-service
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://microservice-teacher-prod:8080
+      SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0: Path=/api/teachers/**
+      SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_0: StripPrefix=2
+      SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_1: name=CircuitBreaker,args.name=teacher-service,args.fallbackUri=forward:/fallback/teachers
+      
+      # CORS configuration - Update for production domains
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_ORIGINS: "https://yourdomain.com,https://www.yourdomain.com"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_HEADERS: "*"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOW_CREDENTIALS: "true"
+      
+      # Circuit Breaker Configuration
+      SPRING_CLOUD_CIRCUIT_BREAKER_RESILIENCE4J_CIRCUITBREAKER_INSTANCES_AUTH-SERVICE_FAILURERATETHRESHOLD: 50
+      SPRING_CLOUD_CIRCUIT_BREAKER_RESILIENCE4J_CIRCUITBREAKER_INSTANCES_AUTH-SERVICE_SLIDINGWINDOWSIZE: 10
+      SPRING_CLOUD_CIRCUIT_BREAKER_RESILIENCE4J_CIRCUITBREAKER_INSTANCES_AUTH-SERVICE_MINIMUMNUMBEROFCALLS: 5
+      
+      # Retry Configuration
+      SPRING_CLOUD_GATEWAY_DEFAULT_FILTERS_0: name=Retry,args.retries=3,args.statuses=BAD_GATEWAY,SERVICE_UNAVAILABLE
+      
+      # Logging Configuration
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE: INFO
+      LOGGING_LEVEL_REACTOR_NETTY: INFO
+      
+      # JVM Configuration
+      JAVA_OPTS: "-Xmx1024m -Xms512m -XX:+UseG1GC -XX:+UseContainerSupport"
+      
+    networks:
+      - distrischool-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  distrischool-network:
+    external: true
