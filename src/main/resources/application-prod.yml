@@ -16,7 +16,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origins: ${SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+            allowed-origins: ${SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://192.168.1.7:3000,http://192.168.1.7:5173}
             allowed-methods: ${SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
             allowed-headers: ${SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOWED_HEADERS:*}
             allow-credentials: ${SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_0_ALLOW_CREDENTIALS:true}
