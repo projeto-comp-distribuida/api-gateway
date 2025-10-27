@@ -39,6 +39,28 @@ spring:
       # Default filters applied to all routes
       default-filters:
         - AddRequestHeader=X-Gateway-Source, api-gateway
+      
+      # Global CORS configuration
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://192.168.1.7:3000"
+              - "http://192.168.1.7:3001"
+              - "http://192.168.1.7:5173"
+              - "http://localhost:3000"
+              - "http://localhost:3001"
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
 
 # Management endpoints
 management:
