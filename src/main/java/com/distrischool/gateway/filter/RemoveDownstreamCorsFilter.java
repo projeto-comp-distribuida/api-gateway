@@ -3,8 +3,9 @@ package com.distrischool.gateway.filter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -24,22 +25,28 @@ public class RemoveDownstreamCorsFilter implements GlobalFilter, Ordered {
             .headers(httpHeaders -> httpHeaders.remove("Origin"))
             .build();
         
+        // Wrap the response to intercept and clean CORS headers before they're written
+        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(exchange.getResponse()) {
+            @Override
+            public HttpHeaders getHeaders() {
+                HttpHeaders headers = super.getHeaders();
+                // Remove all CORS headers from downstream services
+                headers.remove("Access-Control-Allow-Origin");
+                headers.remove("Access-Control-Allow-Credentials");
+                headers.remove("Access-Control-Expose-Headers");
+                headers.remove("Access-Control-Max-Age");
+                headers.remove("Access-Control-Allow-Methods");
+                headers.remove("Access-Control-Allow-Headers");
+                return headers;
+            }
+        };
+        
         ServerWebExchange modifiedExchange = exchange.mutate()
             .request(modifiedRequest)
+            .response(decoratedResponse)
             .build();
         
-        return chain.filter(modifiedExchange).then(Mono.fromRunnable(() -> {
-            var response = modifiedExchange.getResponse();
-            var headers = response.getHeaders();
-            
-            // Remove all CORS headers from downstream services
-            headers.remove("Access-Control-Allow-Origin");
-            headers.remove("Access-Control-Allow-Credentials");
-            headers.remove("Access-Control-Expose-Headers");
-            headers.remove("Access-Control-Max-Age");
-            headers.remove("Access-Control-Allow-Methods");
-            headers.remove("Access-Control-Allow-Headers");
-        }));
+        return chain.filter(modifiedExchange);
     }
 
     @Override
