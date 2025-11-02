@@ -36,6 +36,17 @@ spring:
                 name: auth-service
                 fallbackUri: forward:/fallback/auth
         
+        # Users Service Route
+        - id: users-service
+          uri: ${AUTH_SERVICE_URI:http://microservice-auth-dev:8080}
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: users-service
+                fallbackUri: forward:/fallback/users
+        
         # Student Service Route
         - id: student-service
           uri: ${STUDENT_SERVICE_URI:http://student-management-service-dev:8080}
@@ -76,6 +87,12 @@ resilience4j:
         failure-rate-threshold: ${AUTH_SERVICE_FAILURE_RATE_THRESHOLD:50}
         sliding-window-size: ${AUTH_SERVICE_SLIDING_WINDOW_SIZE:10}
         minimum-number-of-calls: ${AUTH_SERVICE_MINIMUM_NUMBER_OF_CALLS:5}
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      users-service:
+        failure-rate-threshold: ${USERS_SERVICE_FAILURE_RATE_THRESHOLD:50}
+        sliding-window-size: ${USERS_SERVICE_SLIDING_WINDOW_SIZE:10}
+        minimum-number-of-calls: ${USERS_SERVICE_MINIMUM_NUMBER_OF_CALLS:5}
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
       student-service:

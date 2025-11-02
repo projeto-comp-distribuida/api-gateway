@@ -19,32 +19,61 @@ spring:
           uri: http://microservice-auth-dev:8080
           predicates:
             - Path=/api/v1/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: auth-service
+                fallbackUri: forward:/fallback/auth
         
-        # Users Service Route
+        # Users Service Route  
         - id: users-service
           uri: http://microservice-auth-dev:8080
           predicates:
             - Path=/api/v1/users/**
+          filters:
+            - RemoveRequestHeader=Origin
+            - RemoveRequestHeader=Referer
+            - name: CircuitBreaker
+              args:
+                name: users-service
+                fallbackUri: forward:/fallback/users
         
         # Student Service Route
         - id: student-service
           uri: http://student-management-service-dev:8080
           predicates:
-            - Path=/api/students/**
+            - Path=/api/v1/students/**
           filters:
-            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: student-service
+                fallbackUri: forward:/fallback/students
         
         # Teacher Service Route
         - id: teacher-service
           uri: http://microservice-teacher-dev:8080
           predicates:
-            - Path=/api/teachers/**
+            - Path=/api/v1/teachers/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: teacher-service
+                fallbackUri: forward:/fallback/teachers
       
       # Default filters applied to all routes
       default-filters:
         - AddRequestHeader=X-Gateway-Source, api-gateway
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+            methods: GET,POST
+            backoff:
+              firstBackoff: 50ms
+              maxBackoff: 500ms
+              factor: 2
+              basedOnPreviousValue: false
       
       # Global CORS configuration
       globalcors:
@@ -67,15 +96,71 @@ spring:
             allow-credentials: true
             max-age: 3600
 
+# Circuit Breaker Configuration (Resilience4J)
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        # Percentage of failed calls to open the circuit
+        failure-rate-threshold: 50
+        # Number of calls to evaluate failure rate
+        sliding-window-size: 10
+        # Minimum number of calls before circuit can open
+        minimum-number-of-calls: 5
+        # Time to wait before attempting to close the circuit (half-open state)
+        wait-duration-in-open-state: 30s
+        # Number of calls allowed in half-open state
+        permitted-number-of-calls-in-half-open-state: 3
+        # Exceptions that should not count as failures
+        record-exceptions:
+          - org.springframework.web.server.ResponseStatusException
+        # Whether to record exceptions that return specific status codes
+        record-result: true
+    instances:
+      auth-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      users-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      student-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      teacher-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+
 # Management endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,gateway
+        include: health,info,metrics,gateway,circuitbreakers
   endpoint:
     health:
       show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  circuitbreaker:
+    enabled: true
 
 # Logging configuration
 logging:
@@ -83,5 +168,7 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.web.reactive: DEBUG
     reactor.netty: DEBUG
+    io.github.resilience4j: INFO
+    io.github.resilience4j.circuitbreaker: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
