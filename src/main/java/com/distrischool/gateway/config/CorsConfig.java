@@ -13,6 +13,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
  * 
  * This configuration ensures proper handling of CORS preflight (OPTIONS) requests
  * and allows cross-origin requests from the frontend applications.
+ * Also supports WebSocket upgrade headers for real-time notifications.
  */
 @Configuration
 public class CorsConfig {
@@ -39,6 +40,8 @@ public class CorsConfig {
         ));
         
         // Allowed headers - allow all for maximum compatibility
+        // This includes WebSocket upgrade headers:
+        // - Upgrade, Connection, Sec-WebSocket-Key, Sec-WebSocket-Version, Sec-WebSocket-Protocol
         corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
         
         // Exposed headers

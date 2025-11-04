@@ -60,6 +60,23 @@ spring:
               args:
                 name: teacher-service
                 fallbackUri: forward:/fallback/teachers
+        
+        # Notifications Service Route (REST)
+        - id: notifications-service
+          uri: http://notifications-service-dev:8080
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notifications-service
+                fallbackUri: forward:/fallback/notifications
+        
+        # Notifications Service WebSocket Route
+        - id: notifications-ws
+          uri: ws://microservice-template-dev:8080
+          predicates:
+            - Path=/ws/notifications/**
       
       # Default filters applied to all routes
       default-filters:
@@ -139,6 +156,13 @@ resilience4j:
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
       teacher-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      notifications-service:
         baseConfig: default
         failure-rate-threshold: 50
         sliding-window-size: 10
