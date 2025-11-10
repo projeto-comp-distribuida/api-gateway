@@ -20,6 +20,17 @@ spring:
           predicates:
             - Path=/api/v1/auth/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: auth-service
@@ -33,6 +44,17 @@ spring:
           filters:
             - RemoveRequestHeader=Origin
             - RemoveRequestHeader=Referer
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: users-service
@@ -44,6 +66,17 @@ spring:
           predicates:
             - Path=/api/v1/students/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: student-service
@@ -56,6 +89,17 @@ spring:
             - Path=/api/v1/teachers/**
           filters:
             - StripPrefix=0
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: teacher-service
@@ -67,6 +111,17 @@ spring:
           predicates:
             - Path=/api/v1/notifications/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: notifications-service
@@ -84,6 +139,17 @@ spring:
           predicates:
             - Path=/api/v1/grades/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: grade-service
@@ -95,6 +161,17 @@ spring:
           predicates:
             - Path=/api/v1/classes/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: class-service
@@ -106,6 +183,17 @@ spring:
           predicates:
             - Path=/api/v1/turmas/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: class-service
@@ -117,6 +205,17 @@ spring:
           predicates:
             - Path=/api/v1/schedules/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: class-service
@@ -128,6 +227,17 @@ spring:
           predicates:
             - Path=/api/v1/horarios/**
           filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                methods: GET,POST
+                exceptions: IOException,TimeoutException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
             - name: CircuitBreaker
               args:
                 name: class-service
@@ -136,16 +246,6 @@ spring:
       # Default filters applied to all routes
       default-filters:
         - AddRequestHeader=X-Gateway-Source, api-gateway
-        - name: Retry
-          args:
-            retries: 3
-            statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
-            methods: GET,POST
-            backoff:
-              firstBackoff: 50ms
-              maxBackoff: 500ms
-              factor: 2
-              basedOnPreviousValue: false
       
       # Global CORS configuration
       globalcors:
@@ -184,6 +284,7 @@ resilience4j:
         # Number of calls allowed in half-open state
         permitted-number-of-calls-in-half-open-state: 3
         # Exceptions that should be recorded as failures (connection errors, timeouts, etc.)
+        # Note: AnnotatedConnectException is an inner class that extends ConnectException, so it's covered
         record-exceptions:
           - java.io.IOException
           - java.net.ConnectException
@@ -191,6 +292,8 @@ resilience4j:
           - java.net.SocketException
           - java.util.concurrent.TimeoutException
           - org.springframework.web.server.ResponseStatusException
+          - reactor.netty.http.client.PrematureCloseException
+          - io.netty.channel.ConnectTimeoutException
         # Whether to record exceptions that return specific status codes
         record-result: true
     instances:
@@ -266,7 +369,9 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.web.reactive: DEBUG
     reactor.netty: DEBUG
-    io.github.resilience4j: INFO
+    io.github.resilience4j: DEBUG
     io.github.resilience4j.circuitbreaker: DEBUG
+    io.github.resilience4j.circuitbreaker.event: DEBUG
+    org.springframework.cloud.circuitbreaker: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

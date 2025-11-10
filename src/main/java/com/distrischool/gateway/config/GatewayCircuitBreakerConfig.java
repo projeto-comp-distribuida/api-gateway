@@ -46,14 +46,23 @@ public class GatewayCircuitBreakerConfig {
                     .permittedNumberOfCallsInHalfOpenState(3)
                     // Record all exceptions as failures (connection errors, timeouts, etc.)
                     // Note: ConnectException and SocketException extend IOException, but explicit for clarity
+                    // Also record reactor/netty exceptions that wrap connection errors
+                    // AnnotatedConnectException is an inner class that extends ConnectException, so it's covered
                     .recordExceptions(
                         java.io.IOException.class,
                         java.net.ConnectException.class,
                         java.net.UnknownHostException.class,
                         java.net.SocketException.class,
                         java.util.concurrent.TimeoutException.class,
-                        org.springframework.web.server.ResponseStatusException.class
+                        org.springframework.web.server.ResponseStatusException.class,
+                        reactor.netty.http.client.PrematureCloseException.class,
+                        io.netty.channel.ConnectTimeoutException.class
                     )
+                    // Record all exceptions as failures (including any that might not be in the list above)
+                    .recordException(throwable -> {
+                        // Record all exceptions - this ensures we catch everything
+                        return true;
+                    })
                     // Consider slow calls as failures if they exceed this duration
                     .slowCallDurationThreshold(Duration.ofSeconds(5))
                     // If slow call rate exceeds this threshold, open the circuit
