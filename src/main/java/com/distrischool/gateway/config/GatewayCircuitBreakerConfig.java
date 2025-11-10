@@ -44,25 +44,9 @@ public class GatewayCircuitBreakerConfig {
                     .waitDurationInOpenState(Duration.ofSeconds(30))
                     // Number of calls allowed in half-open state
                     .permittedNumberOfCallsInHalfOpenState(3)
-                    // Record all exceptions as failures (connection errors, timeouts, etc.)
-                    // Note: ConnectException and SocketException extend IOException, but explicit for clarity
-                    // Also record reactor/netty exceptions that wrap connection errors
-                    // AnnotatedConnectException is an inner class that extends ConnectException, so it's covered
-                    .recordExceptions(
-                        java.io.IOException.class,
-                        java.net.ConnectException.class,
-                        java.net.UnknownHostException.class,
-                        java.net.SocketException.class,
-                        java.util.concurrent.TimeoutException.class,
-                        org.springframework.web.server.ResponseStatusException.class,
-                        reactor.netty.http.client.PrematureCloseException.class,
-                        io.netty.channel.ConnectTimeoutException.class
-                    )
-                    // Record all exceptions as failures (including any that might not be in the list above)
-                    .recordException(throwable -> {
-                        // Record all exceptions - this ensures we catch everything
-                        return true;
-                    })
+                    // By default, Resilience4J records ALL exceptions as failures
+                    // We don't specify recordExceptions or ignoreExceptions, so all exceptions are tracked
+                    // This includes connection errors (ConnectException, IOException), timeouts, etc.
                     // Consider slow calls as failures if they exceed this duration
                     .slowCallDurationThreshold(Duration.ofSeconds(5))
                     // If slow call rate exceeds this threshold, open the circuit

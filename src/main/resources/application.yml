@@ -20,6 +20,10 @@ spring:
           predicates:
             - Path=/api/v1/auth/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: auth-service
+                fallbackUri: forward:/fallback/auth
             - name: Retry
               args:
                 retries: 3
@@ -31,10 +35,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: auth-service
-                fallbackUri: forward:/fallback/auth
         
         # Users Service Route  
         - id: users-service
@@ -44,6 +44,10 @@ spring:
           filters:
             - RemoveRequestHeader=Origin
             - RemoveRequestHeader=Referer
+            - name: CircuitBreaker
+              args:
+                name: users-service
+                fallbackUri: forward:/fallback/users
             - name: Retry
               args:
                 retries: 3
@@ -55,10 +59,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: users-service
-                fallbackUri: forward:/fallback/users
         
         # Student Service Route
         - id: student-service
@@ -66,6 +66,10 @@ spring:
           predicates:
             - Path=/api/v1/students/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: student-service
+                fallbackUri: forward:/fallback/students
             - name: Retry
               args:
                 retries: 3
@@ -77,10 +81,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: student-service
-                fallbackUri: forward:/fallback/students
         
         # Teacher Service Route
         - id: teacher-service
@@ -89,6 +89,10 @@ spring:
             - Path=/api/v1/teachers/**
           filters:
             - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: teacher-service
+                fallbackUri: forward:/fallback/teachers
             - name: Retry
               args:
                 retries: 3
@@ -100,10 +104,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: teacher-service
-                fallbackUri: forward:/fallback/teachers
         
         # Notifications Service Route (REST)
         - id: notifications-service
@@ -111,6 +111,10 @@ spring:
           predicates:
             - Path=/api/v1/notifications/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: notifications-service
+                fallbackUri: forward:/fallback/notifications
             - name: Retry
               args:
                 retries: 3
@@ -122,10 +126,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: notifications-service
-                fallbackUri: forward:/fallback/notifications
         
         # Notifications Service WebSocket Route
         - id: notifications-ws
@@ -139,6 +139,10 @@ spring:
           predicates:
             - Path=/api/v1/grades/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: grade-service
+                fallbackUri: forward:/fallback/grades
             - name: Retry
               args:
                 retries: 3
@@ -150,10 +154,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: grade-service
-                fallbackUri: forward:/fallback/grades
         
         # Class Management Service Route (Gestao de Turmas) - Classes
         - id: class-service-classes
@@ -161,6 +161,10 @@ spring:
           predicates:
             - Path=/api/v1/classes/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
             - name: Retry
               args:
                 retries: 3
@@ -172,10 +176,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
         
         # Class Management Service Route (Gestao de Turmas) - Turmas
         - id: class-service-turmas
@@ -183,6 +183,10 @@ spring:
           predicates:
             - Path=/api/v1/turmas/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
             - name: Retry
               args:
                 retries: 3
@@ -194,10 +198,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
         
         # Class Management Service Route (Gestao de Turmas) - Schedules
         - id: class-service-schedules
@@ -205,6 +205,10 @@ spring:
           predicates:
             - Path=/api/v1/schedules/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
             - name: Retry
               args:
                 retries: 3
@@ -216,10 +220,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
         
         # Class Management Service Route (Gestao de Turmas) - Horarios
         - id: class-service-horarios
@@ -227,6 +227,10 @@ spring:
           predicates:
             - Path=/api/v1/horarios/**
           filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
             - name: Retry
               args:
                 retries: 3
@@ -238,10 +242,6 @@ spring:
                   maxBackoff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-            - name: CircuitBreaker
-              args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
       
       # Default filters applied to all routes
       default-filters:
@@ -283,17 +283,9 @@ resilience4j:
         wait-duration-in-open-state: 30s
         # Number of calls allowed in half-open state
         permitted-number-of-calls-in-half-open-state: 3
-        # Exceptions that should be recorded as failures (connection errors, timeouts, etc.)
-        # Note: AnnotatedConnectException is an inner class that extends ConnectException, so it's covered
-        record-exceptions:
-          - java.io.IOException
-          - java.net.ConnectException
-          - java.net.UnknownHostException
-          - java.net.SocketException
-          - java.util.concurrent.TimeoutException
-          - org.springframework.web.server.ResponseStatusException
-          - reactor.netty.http.client.PrematureCloseException
-          - io.netty.channel.ConnectTimeoutException
+        # By default, Resilience4J records ALL exceptions as failures
+        # We don't specify record-exceptions here, so all exceptions are tracked
+        # This includes connection errors (ConnectException, IOException), timeouts, etc.
         # Whether to record exceptions that return specific status codes
         record-result: true
     instances:
