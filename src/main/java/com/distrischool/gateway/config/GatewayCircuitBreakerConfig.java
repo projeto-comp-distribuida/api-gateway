@@ -38,15 +38,19 @@ public class GatewayCircuitBreakerConfig {
                     .failureRateThreshold(50)
                     // Number of calls to evaluate failure rate (sliding window)
                     .slidingWindowSize(10)
-                    // Minimum number of calls before circuit can open
-                    .minimumNumberOfCalls(5)
+                    // Minimum number of calls before circuit can open (set to 1 for immediate response)
+                    .minimumNumberOfCalls(1)
                     // Time to wait before attempting to close the circuit (half-open state)
                     .waitDurationInOpenState(Duration.ofSeconds(30))
                     // Number of calls allowed in half-open state
                     .permittedNumberOfCallsInHalfOpenState(3)
-                    // Record all exceptions as failures except for specific ones
+                    // Record all exceptions as failures (connection errors, timeouts, etc.)
+                    // Note: ConnectException and SocketException extend IOException, but explicit for clarity
                     .recordExceptions(
                         java.io.IOException.class,
+                        java.net.ConnectException.class,
+                        java.net.UnknownHostException.class,
+                        java.net.SocketException.class,
                         java.util.concurrent.TimeoutException.class,
                         org.springframework.web.server.ResponseStatusException.class
                     )

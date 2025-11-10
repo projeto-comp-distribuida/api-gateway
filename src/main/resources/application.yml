@@ -77,6 +77,61 @@ spring:
           uri: ws://microservice-template-dev:8080
           predicates:
             - Path=/ws/notifications/**
+        
+        # Grade Management Service Route (Gestao de Notas)
+        - id: grade-service
+          uri: http://grade-management-service-dev:8080
+          predicates:
+            - Path=/api/v1/grades/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: grade-service
+                fallbackUri: forward:/fallback/grades
+        
+        # Class Management Service Route (Gestao de Turmas) - Classes
+        - id: class-service-classes
+          uri: http://microservice-template-dev:8080
+          predicates:
+            - Path=/api/v1/classes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
+        
+        # Class Management Service Route (Gestao de Turmas) - Turmas
+        - id: class-service-turmas
+          uri: http://microservice-template-dev:8080
+          predicates:
+            - Path=/api/v1/turmas/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
+        
+        # Class Management Service Route (Gestao de Turmas) - Schedules
+        - id: class-service-schedules
+          uri: http://microservice-template-dev:8080
+          predicates:
+            - Path=/api/v1/schedules/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
+        
+        # Class Management Service Route (Gestao de Turmas) - Horarios
+        - id: class-service-horarios
+          uri: http://microservice-template-dev:8080
+          predicates:
+            - Path=/api/v1/horarios/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
       
       # Default filters applied to all routes
       default-filters:
@@ -122,14 +177,19 @@ resilience4j:
         failure-rate-threshold: 50
         # Number of calls to evaluate failure rate
         sliding-window-size: 10
-        # Minimum number of calls before circuit can open
-        minimum-number-of-calls: 5
+        # Minimum number of calls before circuit can open (set to 1 for immediate response)
+        minimum-number-of-calls: 1
         # Time to wait before attempting to close the circuit (half-open state)
         wait-duration-in-open-state: 30s
         # Number of calls allowed in half-open state
         permitted-number-of-calls-in-half-open-state: 3
-        # Exceptions that should not count as failures
+        # Exceptions that should be recorded as failures (connection errors, timeouts, etc.)
         record-exceptions:
+          - java.io.IOException
+          - java.net.ConnectException
+          - java.net.UnknownHostException
+          - java.net.SocketException
+          - java.util.concurrent.TimeoutException
           - org.springframework.web.server.ResponseStatusException
         # Whether to record exceptions that return specific status codes
         record-result: true
@@ -138,7 +198,7 @@ resilience4j:
         baseConfig: default
         failure-rate-threshold: 50
         sliding-window-size: 10
-        minimum-number-of-calls: 5
+        minimum-number-of-calls: 1
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
       users-service:
@@ -163,6 +223,20 @@ resilience4j:
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
       notifications-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      grade-service:
+        baseConfig: default
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      class-service:
         baseConfig: default
         failure-rate-threshold: 50
         sliding-window-size: 10

@@ -70,6 +70,61 @@ spring:
               args:
                 name: teacher-service
                 fallbackUri: forward:/fallback/teachers
+        
+        # Grade Management Service Route (Gestao de Notas)
+        - id: grade-service
+          uri: ${GRADE_SERVICE_URI:http://grade-management-service-dev:8080}
+          predicates:
+            - Path=/api/v1/grades/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: grade-service
+                fallbackUri: forward:/fallback/grades
+        
+        # Class Management Service Route (Gestao de Turmas) - Classes
+        - id: class-service-classes
+          uri: ${CLASS_SERVICE_URI:http://microservice-template-dev:8080}
+          predicates:
+            - Path=/api/v1/classes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
+        
+        # Class Management Service Route (Gestao de Turmas) - Turmas
+        - id: class-service-turmas
+          uri: ${CLASS_SERVICE_URI:http://microservice-template-dev:8080}
+          predicates:
+            - Path=/api/v1/turmas/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
+        
+        # Class Management Service Route (Gestao de Turmas) - Schedules
+        - id: class-service-schedules
+          uri: ${CLASS_SERVICE_URI:http://microservice-template-dev:8080}
+          predicates:
+            - Path=/api/v1/schedules/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
+        
+        # Class Management Service Route (Gestao de Turmas) - Horarios
+        - id: class-service-horarios
+          uri: ${CLASS_SERVICE_URI:http://microservice-template-dev:8080}
+          predicates:
+            - Path=/api/v1/horarios/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: class-service
+                fallbackUri: forward:/fallback/classes
       
       # Default filters applied to all routes
       default-filters:
@@ -86,7 +141,7 @@ resilience4j:
       auth-service:
         failure-rate-threshold: ${AUTH_SERVICE_FAILURE_RATE_THRESHOLD:50}
         sliding-window-size: ${AUTH_SERVICE_SLIDING_WINDOW_SIZE:10}
-        minimum-number-of-calls: ${AUTH_SERVICE_MINIMUM_NUMBER_OF_CALLS:5}
+        minimum-number-of-calls: ${AUTH_SERVICE_MINIMUM_NUMBER_OF_CALLS:1}
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
       users-service:
@@ -105,6 +160,18 @@ resilience4j:
         failure-rate-threshold: ${TEACHER_SERVICE_FAILURE_RATE_THRESHOLD:50}
         sliding-window-size: ${TEACHER_SERVICE_SLIDING_WINDOW_SIZE:10}
         minimum-number-of-calls: ${TEACHER_SERVICE_MINIMUM_NUMBER_OF_CALLS:5}
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      grade-service:
+        failure-rate-threshold: ${GRADE_SERVICE_FAILURE_RATE_THRESHOLD:50}
+        sliding-window-size: ${GRADE_SERVICE_SLIDING_WINDOW_SIZE:10}
+        minimum-number-of-calls: ${GRADE_SERVICE_MINIMUM_NUMBER_OF_CALLS:5}
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+      class-service:
+        failure-rate-threshold: ${CLASS_SERVICE_FAILURE_RATE_THRESHOLD:50}
+        sliding-window-size: ${CLASS_SERVICE_SLIDING_WINDOW_SIZE:10}
+        minimum-number-of-calls: ${CLASS_SERVICE_MINIMUM_NUMBER_OF_CALLS:5}
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
 
