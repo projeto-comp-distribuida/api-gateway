@@ -45,6 +45,11 @@ public class FallbackController {
         return Mono.just(createFallbackResponse("Notifications service is temporarily unavailable"));
     }
 
+    @GetMapping("/schedules")
+    public Mono<ResponseEntity<Map<String, Object>>> schedulesFallback() {
+        return Mono.just(createFallbackResponse("Schedule management service is temporarily unavailable"));
+    }
+
     private ResponseEntity<Map<String, Object>> createFallbackResponse(String message) {
         Map<String, Object> response = new HashMap<>();
         response.put("error", "Service Unavailable");

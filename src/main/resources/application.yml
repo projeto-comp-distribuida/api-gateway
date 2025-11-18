@@ -84,11 +84,10 @@ spring:
         
         # Teacher Service Route
         - id: teacher-service
-          uri: http://microservice-teacher-dev:8080
+          uri: http://teacher-management-service-dev:8080
           predicates:
             - Path=/api/v1/teachers/**
           filters:
-            - StripPrefix=0
             - name: CircuitBreaker
               args:
                 name: teacher-service
@@ -155,21 +154,21 @@ spring:
                   factor: 2
                   basedOnPreviousValue: false
         
-        # Class Management Service Route (Gestao de Turmas) - Classes
-        - id: class-service-classes
-          uri: http://microservice-template-dev:8080
+        # Schedule Management Service Route (Gestao de Turmas e Horarios) - Classes
+        - id: schedule-service-classes
+          uri: http://schedule-management-service-dev:8080
           predicates:
             - Path=/api/v1/classes/**
           filters:
             - name: CircuitBreaker
               args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
+                name: schedule-service
+                fallbackUri: forward:/fallback/schedules
             - name: Retry
               args:
                 retries: 3
                 statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
-                methods: GET,POST
+                methods: GET,POST,PUT,DELETE,PATCH
                 exceptions: IOException,TimeoutException
                 backoff:
                   firstBackoff: 50ms
@@ -177,21 +176,21 @@ spring:
                   factor: 2
                   basedOnPreviousValue: false
         
-        # Class Management Service Route (Gestao de Turmas) - Turmas
-        - id: class-service-turmas
-          uri: http://microservice-template-dev:8080
+        # Schedule Management Service Route (Gestao de Turmas e Horarios) - Turmas
+        - id: schedule-service-turmas
+          uri: http://schedule-management-service-dev:8080
           predicates:
             - Path=/api/v1/turmas/**
           filters:
             - name: CircuitBreaker
               args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
+                name: schedule-service
+                fallbackUri: forward:/fallback/schedules
             - name: Retry
               args:
                 retries: 3
                 statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
-                methods: GET,POST
+                methods: GET,POST,PUT,DELETE,PATCH
                 exceptions: IOException,TimeoutException
                 backoff:
                   firstBackoff: 50ms
@@ -199,21 +198,21 @@ spring:
                   factor: 2
                   basedOnPreviousValue: false
         
-        # Class Management Service Route (Gestao de Turmas) - Schedules
-        - id: class-service-schedules
-          uri: http://microservice-template-dev:8080
+        # Schedule Management Service Route (Gestao de Turmas e Horarios) - Schedules
+        - id: schedule-service-schedules
+          uri: http://schedule-management-service-dev:8080
           predicates:
             - Path=/api/v1/schedules/**
           filters:
             - name: CircuitBreaker
               args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
+                name: schedule-service
+                fallbackUri: forward:/fallback/schedules
             - name: Retry
               args:
                 retries: 3
                 statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
-                methods: GET,POST
+                methods: GET,POST,PUT,DELETE,PATCH
                 exceptions: IOException,TimeoutException
                 backoff:
                   firstBackoff: 50ms
@@ -221,21 +220,21 @@ spring:
                   factor: 2
                   basedOnPreviousValue: false
         
-        # Class Management Service Route (Gestao de Turmas) - Horarios
-        - id: class-service-horarios
-          uri: http://microservice-template-dev:8080
+        # Schedule Management Service Route (Gestao de Turmas e Horarios) - Horarios
+        - id: schedule-service-horarios
+          uri: http://schedule-management-service-dev:8080
           predicates:
             - Path=/api/v1/horarios/**
           filters:
             - name: CircuitBreaker
               args:
-                name: class-service
-                fallbackUri: forward:/fallback/classes
+                name: schedule-service
+                fallbackUri: forward:/fallback/schedules
             - name: Retry
               args:
                 retries: 3
                 statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
-                methods: GET,POST
+                methods: GET,POST,PUT,DELETE,PATCH
                 exceptions: IOException,TimeoutException
                 backoff:
                   firstBackoff: 50ms
@@ -331,7 +330,7 @@ resilience4j:
         minimum-number-of-calls: 5
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
-      class-service:
+      schedule-service:
         baseConfig: default
         failure-rate-threshold: 50
         sliding-window-size: 10
