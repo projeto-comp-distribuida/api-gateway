@@ -156,7 +156,7 @@ spring:
         
         # Schedule Management Service Route (Gestao de Turmas e Horarios) - Classes
         - id: schedule-service-classes
-          uri: http://schedule-management-service-dev:8080
+          uri: http://gestao-de-turmas-e-horarios-dev.gestao-de-turmas-e-horarios-dev:80
           predicates:
             - Path=/api/v1/classes/**
           filters:
@@ -178,7 +178,7 @@ spring:
         
         # Schedule Management Service Route (Gestao de Turmas e Horarios) - Turmas
         - id: schedule-service-turmas
-          uri: http://schedule-management-service-dev:8080
+          uri: http://gestao-de-turmas-e-horarios-dev.gestao-de-turmas-e-horarios-dev:80
           predicates:
             - Path=/api/v1/turmas/**
           filters:
@@ -200,7 +200,7 @@ spring:
         
         # Schedule Management Service Route (Gestao de Turmas e Horarios) - Schedules
         - id: schedule-service-schedules
-          uri: http://schedule-management-service-dev:8080
+          uri: http://gestao-de-turmas-e-horarios-dev.gestao-de-turmas-e-horarios-dev:80
           predicates:
             - Path=/api/v1/schedules/**
           filters:
@@ -222,7 +222,7 @@ spring:
         
         # Schedule Management Service Route (Gestao de Turmas e Horarios) - Horarios
         - id: schedule-service-horarios
-          uri: http://schedule-management-service-dev:8080
+          uri: http://gestao-de-turmas-e-horarios-dev.gestao-de-turmas-e-horarios-dev:80
           predicates:
             - Path=/api/v1/horarios/**
           filters:

@@ -26,7 +26,7 @@ buildNumber.properties
 *.zip
 *.tar.gz
 *.rar
-
+config
 # IDE - IntelliJ IDEA
 .idea/
 *.iws
